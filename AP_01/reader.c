@@ -122,7 +122,7 @@ void closeSerial(int fd, struct termios* oldtio)
 
 int main(int argc, char** argv)
 {
-	int fd,c = 0, res, STOP = 0;
+	int fd, res, STOP = 0;
 	struct termios oldtio;
 
 	if(argc < 2 || strcmp(MODEMDEVICE, argv[1]) != 0) 
