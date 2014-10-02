@@ -15,6 +15,10 @@
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
+#define F 0x7E
+#define A 0x03
+#define C 0x07
+
 
 int openSerial(char *path, struct termios* oldtio)
 {
@@ -67,9 +71,9 @@ int openSerial(char *path, struct termios* oldtio)
 void rewriteSerial(char *text, int fd)
 {
 	int res;
-	int length = (int) strlen(text) + 1;
+	int length = (int) strlen(text);
 
-	text[length - 1] = '\0';
+//	text[length - 1] = '\0';
 	res = write(fd, text, length);
 	printf("%d bytes written\n", res);
 }
@@ -87,7 +91,7 @@ void readSerial(int fd)
 	while(STOP == FALSE)
 	{
 		res = read(fd, buf, 1);
-		printf("received %d bytes!", res);
+		printf("received %d bytes!\n", res);
 
 		if(res < 0) 
 		{
@@ -97,13 +101,15 @@ void readSerial(int fd)
 		}
 
 		text[currentIndex] = buf[0];
-		if(text[currentIndex++] == '\0')
+		if(text[currentIndex++] == F)
 			STOP = TRUE;
 	}
 
 
 	printf("Text: %s\n", text);
-	//rewriteSerial(text, fd);
+	sleep(1);
+	rewriteSerial(text, fd);
+	sleep(1);
 }
 
 
