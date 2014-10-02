@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #define BAUDRATE B38400
-#define MODEMDEVICE "/dev/ttyS1"
+#define MODEMDEVICE "/dev/ttyS4"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
@@ -29,7 +29,7 @@ int openSerial(char *path, struct termios* oldtio)
 	}
 
 
-	if(tcgetattr(fd, newtio) == -1)
+	if(tcgetattr(fd, oldtio) == -1)
 	{
 		//Should not happen
 		perror("[!] Error on tcgetattr function.");
