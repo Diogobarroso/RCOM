@@ -16,8 +16,6 @@
 #define FALSE 0
 #define TRUE 1
 
-
-
 int openSerial(char *path, struct termios* oldtio)
 {
 	int fd; 
@@ -71,7 +69,7 @@ void rewriteSerial(char *text, int fd)
 	int res;
 	int length = (int) strlen(text) + 1;
 
-	buf[length - 1] = '\0';
+	text[length - 1] = '\0';
 	res = write(fd, text, length);
 	printf("%d bytes written\n", res);
 }
@@ -103,7 +101,7 @@ void readSerial(int fd)
 
 
 	printf("Text: %s\n", text);
-	rewriteSerial(text, fd);
+	//rewriteSerial(text, fd);
 }
 
 
