@@ -87,6 +87,8 @@ void readSerial(int fd)
 	while(STOP == FALSE)
 	{
 		res = read(fd, buf, 1);
+		printf("received %d bytes!", res);
+
 		if(res < 0) 
 		{
 			//Error
