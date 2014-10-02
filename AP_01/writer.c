@@ -10,19 +10,31 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define BAUDRATE B38400
-#define MODEMDEVICE "/dev/ttyS1"
+#define BAUDRATE B9600
+#define MODEMDEVICE "/dev/ttyS4"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
+
+#define F 0x7e
+#define A 0x03
+#define C 0x03
+
+
 
 
 
 void writeSerial(int file_descriptor)
 {
 	int res;
-	char buf[255];
-		/*Reads line from STDIN*/
+	unsigned char set[5];
+	set[0] = F;
+	set[1] = A;
+	set[2] = C;
+	set[3] = set[1] ^ set[2];
+	set[4] = F;
+	/*char buf[255];
+		//Reads line from STDIN
 	if(gets(buf) == NULL) 
 	{
 		printf("ERROR WITH GETS");
@@ -31,8 +43,9 @@ void writeSerial(int file_descriptor)
 
 	int length = (int) strlen(buf) + 1;
 	buf[length - 1] = '\0';
+	*/
 
-	res = write(file_descriptor,buf,length);   
+	res = write(file_descriptor,set,5);   
 	printf("%d bytes written\n", res);
 }
 
@@ -93,7 +106,7 @@ int main(int argc, char** argv)
 	int fd;
 	struct termios oldtio;
 
-	if ( (argc < 2) || ((strcmp("/dev/ttyS1", argv[1])!=0)))
+	if ( (argc < 2) || ((strcmp("/dev/ttyS4", argv[1])!=0)))
 	{
 		printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
 		exit(1);
