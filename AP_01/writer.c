@@ -105,12 +105,12 @@ int main(int argc, char** argv)
 {
 	int fd;
 	struct termios oldtio;
-
+/*
 	if ( (argc < 2) || ((strcmp("/dev/ttyS4", argv[1])!=0)))
 	{
 		printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
 		exit(1);
-	}
+	}*/
 
 
 	/*
