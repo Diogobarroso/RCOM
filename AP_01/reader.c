@@ -11,7 +11,8 @@
 #include <unistd.h>
 
 #define BAUDRATE B38400
-#define MODEMDEVICE "/dev/ttyS0"
+#define MODEMDEVICE1 "/dev/ttyS0"
+#define MODEMDEVICE2 "/dev/ttyS4"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
@@ -137,7 +138,7 @@ int main(int argc, char** argv)
 	int fd, res, STOP = 0;
 	struct termios oldtio;
 
-	if(argc < 2 || strcmp(MODEMDEVICE, argv[1]) != 0) 
+	if(argc < 2 || (strcmp(MODEMDEVICE1, argv[1]) != 0 && strcmp(MODEMDEVICE2, argv[1]) != 0)) 
 	{
 		printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS0\n");
 		exit(EXIT_FAILURE);
