@@ -114,7 +114,7 @@ void readSerial(int fd)
 	printf("Text: %s\n", text);
 	tcflush(fd, TCOFLUSH);
 	sleep(1);
-	rewriteSerial(text, fd);
+	rewriteSerial(UA, fd);
 	sleep(1);
 }
 
