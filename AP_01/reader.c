@@ -18,6 +18,7 @@
 #define F 0x7E
 #define A 0x03
 #define C 0x07
+#define UA_LENGTH 5
 
 
 int openSerial(char *path, struct termios* oldtio)
@@ -49,8 +50,8 @@ int openSerial(char *path, struct termios* oldtio)
 
 	//Inter-character timer unused
 	newtio.c_cc[VTIME] = 0;
-	//Blocking read until 5 chars received
-	newtio.c_cc[VMIN] = 5;   
+	//Blocking read until 1 chars received
+	newtio.c_cc[VMIN] = 1;   
 
 
 	tcflush(fd, TCIOFLUSH);
@@ -68,13 +69,11 @@ int openSerial(char *path, struct termios* oldtio)
 
 
 
-void rewriteSerial(char *text, int fd)
+void rewriteSerial(unsigned char UA[], int fd)
 {
 	int res;
-	int length = (int) strlen(text);
 
-//	text[length - 1] = '\0';
-	res = write(fd, text, length);
+	res = write(fd, UA, UA_LENGTH);
 	printf("%d bytes written\n", res);
 }
 
@@ -82,31 +81,38 @@ void rewriteSerial(char *text, int fd)
 
 void readSerial(int fd)
 {
-	char buf[255];
-	char text[1024];
+	char buf[255], text[1024];
 	int STOP = FALSE;
 	int currentIndex = 0, res;
+	unsigned char UA[UA_LENGTH];
 
 
 	while(STOP == FALSE)
 	{
 		res = read(fd, buf, 1);
-		printf("received %d bytes!\n", res);
+		printf("read %d bytes!", res);
 
 		if(res < 0) 
 		{
-			//Error
 			perror("[!] Error on read function!");
 			exit(EXIT_FAILURE);
 		}
 
 		text[currentIndex] = buf[0];
-		if(text[currentIndex++] == F)
+		if(currentIndex != 0 && text[currentIndex++] == F)
 			STOP = TRUE;
 	}
 
 
+	UA[0] = F;
+	UA[1] = A;
+	UA[2] = C;
+	UA[3] = A^C;
+	UA[4] = F;
+	
+
 	printf("Text: %s\n", text);
+	tcflush(fd, TCOFLUSH);
 	sleep(1);
 	rewriteSerial(text, fd);
 	sleep(1);
