@@ -20,47 +20,6 @@
 #define A 0x03
 #define C 0x03
 
-int NumberOfTries = 0;
-
-void readSerial(int fd)
-{
-	char buf[255];
-	char text[1024];
-	int STOP = FALSE;
-	int currentIndex = 0, res;
-
-
-	printf("Entered the reader function, waiting 3 seconds\n ");
-	sleep(3);
-	while(STOP == FALSE)
-	{
-		res = read(fd, buf, 1);
-		printf("received %d bytes!\n", res);
-
-		if(res < 0) 
-		{
-			//Error
-			perror("Answer not received, calling WriteSerial again\n");
-			numberOfTries++;
-			if(numberOfTries < 3)
-				writeSerial(fd);
-			else
-			{
-				printf("3 calls made, but no return was detected.\nShutting down program.\n";
-				break;
-			}
-		}
-
-		text[currentIndex] = buf[0];
-		if(text[currentIndex++] == '\0')
-			STOP = TRUE;
-	}
-
-
-	printf("Text: %s\n", text);
-	//rewriteSerial(text, fd);
-}
-
 void writeSerial(int file_descriptor)
 {
 	int res;
@@ -86,6 +45,48 @@ void writeSerial(int file_descriptor)
 	printf("%d bytes written\n", res);
 }
 
+void readSerial(int fd)
+{
+	char buf[255];
+	char text[1024];
+	int STOP = FALSE;
+	int currentIndex = 0, res;
+
+	int numberOfTries = 0;
+
+	printf("Entered the reader function, waiting 3 seconds\n ");
+	sleep(3);
+	while(STOP == FALSE)
+	{
+		res = read(fd, buf, 1);
+		printf("received %d bytes!\n", res);
+
+		if(res < 0) 
+		{
+			//Error
+			perror("Answer not received, calling WriteSerial again\n");
+			numberOfTries++;
+			if(numberOfTries < 3)
+				writeSerial(fd);
+			else
+			{
+				printf("3 calls made, but no return was detected.\nShutting down program.\n");
+				break;
+			}
+		}
+
+		text[currentIndex] = buf[0];
+		if(text[currentIndex++] == '\0')
+			STOP = TRUE;
+	}
+
+
+	printf("Text: %s\n", text);
+	//rewriteSerial(text, fd);
+}
+
+
+
 int openSerial (char* path, struct termios* oldtio)
 {
 	int file_descriptor;
@@ -100,30 +101,30 @@ int openSerial (char* path, struct termios* oldtio)
 	if ( tcgetattr(file_descriptor,oldtio) == -1)
 	{ /* save current port settings */
 		perror("tcgetattr");
-		exit(-1);
-	}
+	exit(-1);
+}
 
-	bzero(&newtio, sizeof(newtio));
-	newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
-	newtio.c_iflag = IGNPAR;
-	newtio.c_oflag = 0;
+bzero(&newtio, sizeof(newtio));
+newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
+newtio.c_iflag = IGNPAR;
+newtio.c_oflag = 0;
 
 		/* set input mode (non-canonical, no echo,...) */
-	newtio.c_lflag = 0;
+newtio.c_lflag = 0;
 
 	newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
 	newtio.c_cc[VMIN]     = 1;   /* blocking read until 5 chars received */
 
-		tcflush(file_descriptor, TCIOFLUSH);
+tcflush(file_descriptor, TCIOFLUSH);
 
-	if ( tcsetattr(file_descriptor,TCSANOW,&newtio) == -1) {
-		perror("tcsetattr");
-		exit(-1);
-	}
+if ( tcsetattr(file_descriptor,TCSANOW,&newtio) == -1) {
+	perror("tcsetattr");
+	exit(-1);
+}
 
-	printf("New termios structure set\n");
+printf("New termios structure set\n");
 
-	return file_descriptor;
+return file_descriptor;
 
 }
 
@@ -156,13 +157,13 @@ int main(int argc, char** argv)
 	*/
 
 
-	fd = openSerial(argv[1], &oldtio);
+		fd = openSerial(argv[1], &oldtio);
 
-	writeSerial(fd);
+		writeSerial(fd);
 
-	readSerial(fd);
+		readSerial(fd);
 		
-	closeSerial(fd, &oldtio);
+		closeSerial(fd, &oldtio);
 
-	return 0;
-}
+		return 0;
+	}
