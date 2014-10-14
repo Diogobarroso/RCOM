@@ -20,6 +20,7 @@ int main(int argc, char** argv)
 	if ((strcmp("client", argv[2])==0))
 	{
 		appLayer.status = CLIENT;
+		llOpen(&appLayer, &lLayer);
 
 	}
 	else if ((strcmp("server", argv[2])==0))

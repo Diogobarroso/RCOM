@@ -61,13 +61,21 @@ int writeSerial (char message[], int messageSize, int file_descriptor)
 
 char readSerial (int file_descriptor)
 {
-	char buffer[1];
-	int readResult = read (file_descriptor, buffer, 1);
-	if (readResult > 0)
-		return buffer[0];
-	else
+	char buf[1];
+	int res;
+	int STOP = FALSE;
+	while(STOP == FALSE)
 	{
-		printf("Error reading from Serial\n");
-		exit(1);
+		res = read(file_descriptor, buf, 1);
+		printf("read %d bytes!\n", res);
+
+		if(res < 0) 
+		{
+			perror("[!] Error on read function!");
+			exit(EXIT_FAILURE);
+		}
+
+		return buf[0];
 	}
+
 }

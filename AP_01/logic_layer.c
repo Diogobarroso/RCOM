@@ -5,7 +5,8 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 {
 	char * header = (char*) malloc (5*sizeof(unsigned char));
 
-	openSerial(lLayer->port, lLayer->oldtio);	
+	appLayer->fileDescriptor = openSerial(lLayer->port, lLayer->oldtio);
+
 	if (appLayer->status == SERVER)
 	{
 		header[0] = F;
@@ -18,6 +19,7 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 
 	if (appLayer->status == CLIENT)
 	{
+		printf("%u\n", appLayer->fileDescriptor);
 		char c = readSerial(appLayer->fileDescriptor);
 		printf("%c\n", c);
 	}
