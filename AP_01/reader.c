@@ -137,13 +137,13 @@ int main(int argc, char** argv)
 {
 	int fd, res, STOP = 0;
 	struct termios oldtio;
-
+/*
 	if(argc < 2 || (strcmp(MODEMDEVICE1, argv[1]) != 0 && strcmp(MODEMDEVICE2, argv[1]) != 0)) 
 	{
 		printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS0\n");
 		exit(EXIT_FAILURE);
 	}
-
+*/
 
 	fd = openSerial(argv[1], &oldtio);
 	readSerial(fd);
