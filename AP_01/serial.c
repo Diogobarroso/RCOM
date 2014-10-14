@@ -67,7 +67,6 @@ char readSerial (int file_descriptor)
 	while(STOP == FALSE)
 	{
 		res = read(file_descriptor, buf, 1);
-		printf("read %d bytes!\n", res);
 
 		if(res < 0) 
 		{
