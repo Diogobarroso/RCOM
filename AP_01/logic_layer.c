@@ -17,11 +17,11 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 		header[2] = SET;
 		header[3] = header[1] ^header[2];
 		header[4] = F;
-		writeSerial(header, 5, appLayer->fileDescriptor);
 
 		int tries = 0;
 
 		int parsing = 1;
+
 		while (tries < 3)
 		{
 			if (parsing == 0)
@@ -30,7 +30,9 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 			}
 
 			printf("Allarm set %d\n", tries);
-			alarm(1);
+			alarm(3);
+
+			writeSerial(header, 5, appLayer->fileDescriptor);
 
 			char c;
 			/* State Machine for UA processing */
@@ -40,8 +42,12 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 
 				if (r < 0)
 				{
-					parsing = 0;
+					//parsing = 0;
+
 					tries++;
+					break;
+				} else {
+					alarm(0);
 				}
 
 				switch (state)
@@ -142,7 +148,7 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 		/* State Machine for SET processing */
 		while (parsing == 1)
 		{
-			int r = readSerial(appLayer->fileDescriptor, c);
+			int r = readSerial(appLayer->fileDescriptor, &c);
 			printf("\n\n");
 
 			switch (state)
