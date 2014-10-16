@@ -75,7 +75,7 @@ int readSerial (int file_descriptor, char * c)
 			//exit(EXIT_FAILURE);
 		}
 
-		c = buf[0];
+		*c = buf[0];
 		return res;
 	}
 

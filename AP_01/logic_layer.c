@@ -21,14 +21,18 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 
 		int tries = 0;
 
+		int parsing = 1;
 		while (tries < 3)
 		{
+			if (parsing == 0)
+			{
+				break;
+			}
 
 			printf("Allarm set %d\n", tries);
 			alarm(1);
 
 			char c;
-			int parsing = 1;
 			/* State Machine for UA processing */
 			while (parsing == 1)
 			{
@@ -97,7 +101,7 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 						state = FLAG_RCV;
 						break;
 
-						case (A^SET):
+						case (A^UA):
 						state = BCC_OK;
 						break;
 
@@ -224,12 +228,12 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 			}
 			printf("%X\n", c);
 		}
-		
+
 		if (success)
 		{
 			header[0] = F;
 			header[1] = A;
-			header[2] = SET;
+			header[2] = UA;
 			header[3] = header[1] ^header[2];
 			header[4] = F;
 
