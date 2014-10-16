@@ -42,4 +42,4 @@ void closeSerial (int file_descriptor, struct termios * oldtio);
 
 int writeSerial (char message[], int messageSize, int file_descriptor);
 
-char readSerial (int file_descriptor);
+int readSerial (int file_descriptor, char * c);

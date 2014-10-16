@@ -59,7 +59,7 @@ int writeSerial (char message[], int messageSize, int file_descriptor)
 	return writeResult;
 }
 
-char readSerial (int file_descriptor)
+int readSerial (int file_descriptor, char * c)
 {
 	char buf[1];
 	int res;
@@ -71,10 +71,14 @@ char readSerial (int file_descriptor)
 		if(res < 0) 
 		{
 			perror("[!] Error on read function!");
-			exit(EXIT_FAILURE);
+			return (-1);
+			//exit(EXIT_FAILURE);
 		}
 
-		return buf[0];
+		c = buf[0];
+		return res;
 	}
+
+
 
 }

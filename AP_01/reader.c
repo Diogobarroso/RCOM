@@ -96,7 +96,7 @@ void readSerial(int fd)
 		if(res < 0) 
 		{
 			perror("[!] Error on read function!");
-			exit(EXIT_FAILURE);
+			//exit(EXIT_FAILURE);
 		}
 
 		text[currentIndex] = buf[0];
