@@ -3,6 +3,8 @@
 #define CLIENT 0
 #define SERVER 1
 
+#define PACKET_SIZE 200
+
 struct applicationLayer {
 	/*Descritor correspondente à porta série*/
 	int fileDescriptor;	

@@ -2,7 +2,7 @@
 #include "logic_layer.h"
 #include "application.h"
 
-llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
+int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 {
 	char * header = (char*) malloc (5*sizeof(unsigned char));
 
@@ -149,7 +149,10 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 		while (parsing == 1)
 		{
 			int r = readSerial(appLayer->fileDescriptor, &c);
+<<<<<<< HEAD
+=======
 			printf("\n\n");
+>>>>>>> 5d77585b6dd280504fdf21449394a22a69e3f31b
 
 			switch (state)
 			{
@@ -247,5 +250,6 @@ llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 		}
 	}
 
+	return appLayer->fileDescriptor;
 
 }
