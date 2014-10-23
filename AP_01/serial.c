@@ -74,10 +74,6 @@ int readSerial (int file_descriptor, char * c)
 			return (-1);
 			//exit(EXIT_FAILURE);
 		}
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d77585b6dd280504fdf21449394a22a69e3f31b
 		*c = buf[0];
 		return res;
 	}

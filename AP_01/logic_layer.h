@@ -20,3 +20,4 @@ enum states
 #define UA 0x07
 
 int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer);
+int llwrite(int fd, char * buffer, int length);

@@ -13,3 +13,5 @@ struct applicationLayer {
 };
 
 int main(int argc, char** argv);
+
+int readControlPacket(int fd, char* controlPacket);
