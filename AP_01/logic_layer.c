@@ -29,7 +29,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 				break;
 			}
 
-			printf("Allarm set %d\n", tries);
 			alarm(3);
 
 			writeSerial(header, 5, appLayer->fileDescriptor);
@@ -42,8 +41,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 
 				if (r < 0)
 				{
-					//parsing = 0;
-
 					tries++;
 					break;
 				} else {
@@ -53,7 +50,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 				switch (state)
 				{
 					case (START):
-					printf("START\n");
 					switch (c)
 					{
 						case (F):
@@ -64,7 +60,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 					break;
 
 					case (FLAG_RCV):
-					printf("FLAG_RCV\n");
 					switch (c)
 					{
 						case (F):
@@ -82,7 +77,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 					break;
 
 					case (A_RCV):
-					printf("A_RCV\n");
 					switch (c)
 					{
 						case (F):
@@ -100,7 +94,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 					break;
 
 					case (C_RCV):
-					printf("C_RCV\n");
 					switch (c)
 					{
 						case (F):
@@ -118,7 +111,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 					break;
 
 					case (BCC_OK):
-					printf("BCC_OK\n");
 					switch (c)
 					{
 						case (F):
@@ -134,7 +126,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 					default:
 					break;
 				}
-				printf("%X\n", c);
 
 			}
 		}
@@ -149,12 +140,10 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 		while (parsing == 1)
 		{
 			int r = readSerial(appLayer->fileDescriptor, &c);
-			printf("\n\n");
 
 			switch (state)
 			{
 				case (START):
-				printf("START\n");
 				switch (c)
 				{
 					case (F):
@@ -164,7 +153,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 				break;
 
 				case (FLAG_RCV):
-				printf("FLAG_RCV\n");
 				switch (c)
 				{
 					case (F):
@@ -182,7 +170,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 				break;
 
 				case (A_RCV):
-				printf("A_RCV\n");
 				switch (c)
 				{
 					case (F):
@@ -200,7 +187,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 				break;
 
 				case (C_RCV):
-				printf("C_RCV\n");
 				switch (c)
 				{
 					case (F):
@@ -218,7 +204,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 				break;
 
 				case (BCC_OK):
-				printf("BCC_OK\n");
 				switch (c)
 				{
 					case (F):
@@ -232,7 +217,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 				}
 				break;
 			}
-			printf("%X\n", c);
 		}
 
 		if (success)
@@ -253,15 +237,6 @@ int llOpen(struct applicationLayer * appLayer, struct linkLayer * lLayer)
 
 int llwrite(int fd, char * buffer, int length)
 {
-	
 
-	printf("ReturnBuffer\n");
-	char returnBuffer[23];
-	readSerial(fd, returnBuffer);
-
-	char fileName[21];
-	memcpy(fileName, returnBuffer + 3, 20);
-	fileName[21] = '\0';
-
-	printf("FILE NAME = %c\n", fileName[0]);
 }
+

@@ -70,7 +70,7 @@ int readSerial (int file_descriptor, char * c)
 
 		if(res < 0) 
 		{
-			perror("[!] Error on read function!");
+			perror("Error on read function!\n");
 			return (-1);
 			//exit(EXIT_FAILURE);
 		}

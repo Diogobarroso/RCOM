@@ -7,7 +7,7 @@
 
 void alarmHandler(int signo)
 {
-	printf("ALRAM HANDLER\n");
+	printf("Alarm Handler was called, timeout occurred;\n");
 }
 
 
@@ -46,6 +46,8 @@ int main(int argc, char** argv)
 		char* startControlPacket = (char*) malloc (23 * sizeof(char));
 		readControlPacket(fd, startControlPacket);
 
+		printf("%s\n", startControlPacket);
+
 	}
 	else if ((strcmp("server", argv[2])==0))
 	{
@@ -53,17 +55,8 @@ int main(int argc, char** argv)
 		appLayer.status = SERVER;
 		int fd = llOpen(&appLayer, &lLayer);
 
-		char startControlPacket[23];
-
-		startControlPacket[0] = '2';
-		startControlPacket[1] = '2';
-		startControlPacket[2] = 20 ;
-		memcpy(startControlPacket + 3, argv[3], 20);
-
-		int writeReturn = writeSerial(startControlPacket, 23, fd);
-
-		printf("%d\n", writeReturn);
-
+		writeControlPacket(fd,argv[3]);
+		
 		// Read file
 		FILE* fr = fopen(argv[3], "rb");
 
@@ -94,6 +87,24 @@ int main(int argc, char** argv)
 	}
 }
 
+/*
+int writeControlPacket(int fd, char* data)
+{
+	char startControlPacket[23];
+
+	startControlPacket[0] = 2;
+	startControlPacket[1] = 2;
+	startControlPacket[2] = 20;
+	memcpy(startControlPacket + 3, data, 20);
+
+	int writeReturn = writeSerial(startControlPacket, 23, fd);
+
+	if (writeReturn != 23)
+		return -1;
+	else
+		return 1;
+
+}
 
 int readControlPacket(int fd, char * controlPacket)
 {
@@ -103,15 +114,12 @@ int readControlPacket(int fd, char * controlPacket)
 	for (index = 0; index < 23; index++)
 	{
 		int r = readSerial(fd, &c);
+		if (r != 1)
+			exit(1);
 		controlPacket[index] = c;
 
 	}
 
-	char fileName[21];
-	memcpy(fileName, controlPacket + 3, 20);
-	fileName[21] = '\0';
-
-	printf("FILE NAME = %s\n", fileName);
-
 	return 1;
 }
+*/
