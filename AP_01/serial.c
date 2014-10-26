@@ -1,7 +1,10 @@
 #include "serial.h"
 
-int openSerial (char* path, struct termios * oldtio)
+struct termios * oldtio;
+
+int openSerial (char* path)
 {
+	oldtio = (struct termios *) malloc (sizeof(struct termios));
 	struct termios newtio;
 	int file_descriptor = open(path, O_RDWR | O_NOCTTY );
 	if (file_descriptor < 0)
@@ -9,7 +12,6 @@ int openSerial (char* path, struct termios * oldtio)
 		perror(path);
 		exit(-1);
 	}
-
 	if ( tcgetattr(file_descriptor,oldtio) == -1)
 	{
 		perror("tcgetattr");
@@ -22,7 +24,7 @@ int openSerial (char* path, struct termios * oldtio)
 	newtio.c_oflag = 0;
 
 
-		/* set input mode (non-canonical, no echo,...) */
+	/* set input mode (non-canonical, no echo,...) */
 	newtio.c_lflag = 0;
 
 	newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
@@ -34,8 +36,6 @@ int openSerial (char* path, struct termios * oldtio)
 		perror("tcsetattr");
 		exit(-1);
 	}
-
-	printf("New termios structure set\n");
 
 	return file_descriptor;
 }

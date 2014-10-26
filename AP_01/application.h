@@ -3,13 +3,11 @@
 #define CLIENT 0
 #define SERVER 1
 
-#define START 2
-#define START 3
+#define C_START 2
+#define C_END 3
 
 #define FILE_SIZE 1
 #define FILE_NAME 2
-
-
 
 #define PACKET_SIZE 200
 
@@ -31,7 +29,7 @@ int main(int argc, char** argv);
  * @brief Sends a Control Packet through the Serial Port
  * @details Writes a Control Packet with the following format:
  * C T L data
- * where C can be START(2) or END(3), t indicates what information is being sent: FILE_SIZE(1) or FILE_NAME(2), l is the length of data in bytes, data is the information to send
+ * where C can be C_START(2) or C_END(3), t indicates what information is being sent: FILE_SIZE(1) or FILE_NAME(2), l is the length of data in bytes, data is the information to send
  * 
  * @param fd File Descriptor for the Serial Port
  * @param c Control Field
@@ -46,7 +44,7 @@ int writeControlPacket(int fd, int c, int t, int l, char* data);
  * @brief Receives a Control Packet through the Serial Port
  * @details Reads a Control Packet with the following format:
  * C T L data
- * where C can be START(2) or END(3), t indicates what information is being sent: FILE_SIZE(1) or FILE_NAME(2), l is the length of data in bytes, data is the information to send
+ * where C can be C_START(2) or C_END(3), t indicates what information is being sent: FILE_SIZE(1) or FILE_NAME(2), l is the length of data in bytes, data is the information to send
  * 
  * @param fd File Descriptor for the Serial Port
  * @param c Control Field

@@ -24,39 +24,45 @@ int main(int argc, char** argv)
 		exit (1);
 	}
 	*/
+	/*
 	struct applicationLayer appLayer;
 	struct linkLayer lLayer;
-
+*/
+	// Alarm handler setup -----------------
 	struct sigaction act;
 	act.sa_handler = alarmHandler;
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
 
 	if (sigaction(SIGALRM,&act,NULL) == -1)
-		printf("Erro a fazer sigaction\n");
+		printf("Error in sigaction\n");
 
-	strncpy(lLayer.port, argv[1],20);
-	lLayer.oldtio = (struct termios *) malloc (sizeof(struct termios));
+	// -------------------------------------
+
 
 	if ((strcmp("client", argv[2])==0))
 	{
-		appLayer.status = CLIENT;
-		int fd = llOpen(&appLayer, &lLayer);
+		int fd = llOpen(argv[1], CLIENT);
+
+		printf("Serial Port opened\n");
 
 		char* startControlPacket = (char*) malloc (23 * sizeof(char));
-		readControlPacket(fd, startControlPacket);
-
-		printf("%s\n", startControlPacket);
+		
+		int readResult = readControlPacket(fd, C_START, FILE_NAME, 20, startControlPacket);
+		
+		printf("readResult = %d\n", readResult);
+		printf("File Name = %s\n", startControlPacket);
 
 	}
 	else if ((strcmp("server", argv[2])==0))
 	{
-		// Open the serial
-		appLayer.status = SERVER;
-		int fd = llOpen(&appLayer, &lLayer);
+		int fd = llOpen(argv[1], SERVER);
 
-		writeControlPacket(fd,argv[3]);
+		printf("Serial Port opened\n");
+
+		writeControlPacket(fd, C_START, FILE_NAME, 20, argv[3]);
 		
+		/*
 		// Read file
 		FILE* fr = fopen(argv[3], "rb");
 
@@ -74,11 +80,11 @@ int main(int argc, char** argv)
 			}
 			total += bytesRead;
 
-			// Send file Packet
+			// Send file Packet ----------------------
 
 		}
 		printf("File is %d bytes long\n", total);
-
+*/
 	}
 	else 
 	{
@@ -87,39 +93,56 @@ int main(int argc, char** argv)
 	}
 }
 
-/*
-int writeControlPacket(int fd, char* data)
+int writeControlPacket(int fd, int c, int t, int l, char* data)
 {
-	char startControlPacket[23];
+	char * controlPacket = (char*) malloc ((3 + l) * sizeof (char));
+	controlPacket[0] = c;
+	controlPacket[1] = t;
+	controlPacket[2] = l;
+	memcpy(controlPacket + 3, data, l);
 
-	startControlPacket[0] = 2;
-	startControlPacket[1] = 2;
-	startControlPacket[2] = 20;
-	memcpy(startControlPacket + 3, data, 20);
-
-	int writeReturn = writeSerial(startControlPacket, 23, fd);
-
-	if (writeReturn != 23)
-		return -1;
-	else
-		return 1;
-
-}
-
-int readControlPacket(int fd, char * controlPacket)
-{
-
-	int index;
-	char c;
-	for (index = 0; index < 23; index++)
+	printf("Control Packet:\n\tC->%d\n\tT->%d\n\tL->%d\n",controlPacket[0],controlPacket[1],controlPacket[2]);
+	int index = 0;
+	for (index = 0; index < l; index++)
 	{
-		int r = readSerial(fd, &c);
-		if (r != 1)
-			exit(1);
-		controlPacket[index] = c;
-
+		printf("\tdata[%d]->%c\n", index, controlPacket[index + 3]);
 	}
 
-	return 1;
+	int writeReturn = llwrite(fd, controlPacket, 3 + l);
+
+	if (writeReturn != (3 + l))
+		return -1;
+	else
+		return 0;
 }
-*/
+
+int readControlPacket(int fd, int c, int t, int l, char* data)
+{
+
+	printf("readControlPacket(%d, %d, %d, %d, data)\n", fd, c, t, l);
+
+	char * controlPacket = (char*) malloc ((3 + l) * sizeof (char));
+
+	int readReturn = llread (fd, controlPacket);
+
+	if (controlPacket[0] != c)
+	{
+		printf("controlPacket[0] = %d\n", controlPacket[0]);
+		return -1;
+	}
+	if (controlPacket[1] != t)
+	{
+		printf("controlPacket[1] = %d\n", controlPacket[1]);
+		return -1;
+	}
+	if (controlPacket[2] != l)
+	{
+		printf("controlPacket[2] = %d\n", controlPacket[2]);
+		return -1;
+	}
+
+	printf("Data Size = %d\n", sizeof (data));
+	memcpy(data, controlPacket + 3, l);
+
+	return 0;
+}

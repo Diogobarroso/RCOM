@@ -13,12 +13,6 @@
 #define FALSE 0
 #define TRUE 1
 
-#define F 0x7e
-#define A 0x03
-
-#define SET 0x03
-#define UA 0x07
-
 /**
  * @brief Structure containing Serial Connection properties
  * @details Holds the port name, baudRate, sequenceNumber of the packet being transmitted, timeout value, number of retries for the transmission and the previous Serial Port configurations
@@ -36,7 +30,7 @@ struct linkLayer {
 	unsigned int numTransmissions; /** Number of retries for the transmission */
 
 	char frame[5]; /** Frame */
-	
+
 	struct termios * oldtio; /** Previous Serial Port configurations */
 };
 
@@ -49,7 +43,7 @@ struct linkLayer {
  * 
  * @return 0 on success, -1 otherwise
  */
-int openSerial (char* path, struct termios * oldtio);
+int openSerial (char* path);
 
 /**
  * @brief Closes Serial Port
