@@ -3,8 +3,8 @@
 #define CLIENT 0
 #define SERVER 1
 
-#define START 2
-#define START 3
+#define START_2 2
+#define START_3 3
 
 #define FILE_SIZE 1
 #define FILE_NAME 2
