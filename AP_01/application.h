@@ -6,6 +6,9 @@
 #define C_START 2
 #define C_END 3
 
+#define START_2 2
+#define START_3 3
+
 #define FILE_SIZE 1
 #define FILE_NAME 2
 

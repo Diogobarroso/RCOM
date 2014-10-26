@@ -3,6 +3,11 @@
 #include "application.h"
 #include "serial.h"
 
+/**
+ * @brief Enumeration of the states the State Machine applies
+ * @details The State Machine will be applied both for the Client and Server, in order for the program to know what to do/expect next
+ * 
+ */
 enum states
 {
 	START,
