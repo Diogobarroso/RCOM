@@ -249,7 +249,7 @@ int llOpen(char * port, int mode)
 
 int llwrite(int fd, char * buffer, int length)
 {
-	printf("BUFFER[0] = %c\n", buffer[0]);
+	
 	char * sequence = (char *) malloc ((6 + length) * sizeof (char));
 
 	sequence[0] = F;
@@ -275,7 +275,7 @@ int llwrite(int fd, char * buffer, int length)
 	int writeReturn = writeSerial(sequence, (7 + length), fd);
 
 
-	if (writeReturn != (6 + length))
+	if (writeReturn != (7 + length))
 	{
 		printf("Error writing to the Serial Port\n");
 		return (-1);
@@ -301,7 +301,7 @@ int llread(int fd, char * buffer)
 			printf("Error reading from Serial Port\n");
 		}
 
-		printf("c = %X | %c\n",c,c);
+		printf("\tc = %X | %c\n",c,c);
 
 		switch (state)
 		{

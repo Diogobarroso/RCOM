@@ -5,6 +5,8 @@
 #include "logic_layer.h"
 #include "serial.h"
 
+int sequenceNumber;
+
 void alarmHandler(int signo)
 {
 	printf("Alarm Handler was called, timeout occurred;\n");
@@ -39,6 +41,7 @@ int main(int argc, char** argv)
 
 	// -------------------------------------
 
+	sequenceNumber = 0;
 
 	if ((strcmp("client", argv[2])==0))
 	{

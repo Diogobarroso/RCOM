@@ -57,3 +57,46 @@ int writeControlPacket(int fd, int c, int t, int l, char* data);
  * @return 0 on success, -1 otherwise
  */
 int readControlPacket(int fd, int c, int t, int l, char* data);
+
+/**
+ * @brief Sends an Information Packet through the Serial Port
+ * @details Writes an Information Packet with the following structure:
+ * C N L2 L1 P1 ... Pn
+ * where:
+ * C-> Control Field = 1
+ * N-> Sequence Number
+ * L2-> (length/256)
+ * L1-> (length%256)
+ * P1 ... Pn-> Information to write
+ * It then calls llwrite with this array
+ * 
+ * @param fd File Descriptor of the Serial Port
+ * @param length Size of the data array (in bytes)
+ * @param data Char array to transmit
+ * @return 0 on success, -1 otherwise
+ */
+int writeInfoPacket(int fd, int length, char* data);
+
+/**
+ * @brief Reads an Information Packet from the Serial Port
+ * @details Reads the Information Packet from the Serial Port, in order to do this:
+ * Reads the first byte, C, if it is 1, the Packet contains Information 
+ * 
+ * @param fd [description]
+ * @param data [description]
+ * @return [description]
+ */
+int readInfoPacket(int fd, char* data);
+
+/**
+ * @brief Reads a Packet
+ * @details Reads a packet with llread, based on the C field, it will either call 
+ * readControlPacket(fd, C_END, FILE_SIZE, 20, data)
+ * readInfoPacket(fd, data)
+ * 
+ * @param fd File Descriptor of the Serial Port
+ * @param data Pre-allocated array to return the packet
+ * 
+ * @return 0 on success, -1 otherwise
+ */
+int readPacket(int fd, char* data);
