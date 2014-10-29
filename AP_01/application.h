@@ -3,6 +3,7 @@
 #define CLIENT 0
 #define SERVER 1
 
+#define C_INFO 1
 #define C_START 2
 #define C_END 3
 
