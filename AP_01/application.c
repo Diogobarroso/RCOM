@@ -81,15 +81,16 @@ int main(int argc, char** argv)
 				perror("Read Error");
 				exit(1);
 			}
+				
 			total += bytesRead;
-
-			bytesRead += fread(dataPacket[4], 1, PACKET_SIZE, fr);
+			total += fread(dataPacket, 1, PACKET_SIZE, fr);
+printf("Going to fread\n");
 			writeInfoPacket(fd, PACKET_SIZE, dataPacket);
 
 		}
 		printf("File is %d bytes long\n", total);
 
-		writeControlPacket(fd, C_END, FILE_SIZE, PACKET_SIZE, bytesRead);
+		writeControlPacket(fd, C_END, FILE_SIZE, PACKET_SIZE, &total);
 
 	}
 	else 
@@ -124,16 +125,12 @@ int writeControlPacket(int fd, int c, int t, int l, char* data)
 
 int writeInfoPacket(int fd, int length, char* data)
 {
+
 	//char * infoPacket = (char*) malloc ((PACKET_SIZE) * sizeof (char));
 	data[0] = 1;
 	data[1] = (++sequencePacketNumber) % 255;
 	data[2] = PACKET_SIZE / 256;
 	data[3] = PACKET_SIZE % 256;
-
-
-	int i = 4;
-	for(; i < PACKET_SIZE - 4; ++i)
-		data[i] = data[i - 4];
 
 	int writeReturn = llwrite(fd, data, length);
 
