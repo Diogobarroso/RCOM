@@ -207,7 +207,8 @@ int readInfoPacket(int fd, char* data)
 			rej[0] = 1;
 			rej[1] = (sequencePacketNumber + 1) % 256;
 			rej[2] = 129;
-			rej[3]; // <----------------------
+			rej[3] = calculateParity(&rej[0], 3);
+			rej[4];// <----------------------
 			return -1;
 		}
 
@@ -219,7 +220,8 @@ int readInfoPacket(int fd, char* data)
 			rr[2] = 134;
 		else
 			rr[2] = 5;
-		rr[3]; // <----------------------
+		rr[3] = calculateParity(&rej[0], 3);
+		rr[4]; //<-------------------------
 	}
 	else
 	{
