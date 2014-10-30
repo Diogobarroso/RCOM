@@ -4,12 +4,12 @@
 
 int sequenceNumber;
 
-int llOpen(char * port, int mode)
+int llOpen(unsigned char * port, int mode)
 {
 	printf("llOpen (%s, %d)\n", port, mode);
 	sequenceNumber = 0;
 
-	char * header = (char*) malloc (5*sizeof(unsigned char));
+	unsigned char * header = (unsigned char*) malloc (5*sizeof(unsigned char));
 
 	int fd = openSerial(port);
 
@@ -41,7 +41,7 @@ int llOpen(char * port, int mode)
 
 			writeSerial(header, 5, fd);
 
-			char c;
+			unsigned char c;
 			/* State Machine for UA processing */
 			while (parsing == 1)
 			{
@@ -143,7 +143,7 @@ int llOpen(char * port, int mode)
 
 	if (mode == CLIENT)
 	{
-		char c;
+		unsigned char c;
 		int parsing = 1;
 		int success = 0;
 		/* State Machine for SET processing */
@@ -247,10 +247,11 @@ int llOpen(char * port, int mode)
 
 }
 
-int llwrite(int fd, char * buffer, int length)
+int llwrite(int fd, unsigned char * buffer, int length)
 {
 	
-	char * sequence = (char *) malloc ((6 + length) * sizeof (char));
+	unsigned char * sequence = (unsigned char *) malloc ((6 + length) * sizeof (unsigned char));
+
 
 	sequence[0] = F;
 	sequence[1] = A;
@@ -262,15 +263,15 @@ int llwrite(int fd, char * buffer, int length)
 	memcpy(sequence + 4, buffer, length);
 	sequence[4 + length + 1] = calculateParity(& sequence[4],length);
 	sequence[4 + length + 2] = F;
-
+/*
 	printf("Sequence:\n\tF->%X\n\tA->%X\n\tC->%X\n\tBCC->%X\n", sequence[0], sequence[1], sequence[2], sequence[3]);
 	int index = 4;
 	for (index = 4; index < length + 4; index++)
 	{
-		printf("\tbuffer[%d]->%c\n",index -4, sequence[index]);
+		printf("\tbuffer[%d]->%X\n",index -4, sequence[index]);
 	}
 	printf("\tBCC->%X\n\tF->%X\n", sequence[length + 5], sequence[length + 6]);
-
+*/
 
 	int writeReturn = writeSerial(sequence, (7 + length), fd);
 
@@ -284,14 +285,13 @@ int llwrite(int fd, char * buffer, int length)
 	}
 }
 
-int llread(int fd, char * buffer)
+int llread(int fd, unsigned char * buffer)
 {
-
 	enum states state = START;
 	int parsing = 1;
-	char c;
+	unsigned char c;
 	int index = 0;
-
+	
 	while (parsing == 1)
 	{
 		int r = readSerial(fd, &c);
@@ -301,7 +301,7 @@ int llread(int fd, char * buffer)
 			printf("Error reading from Serial Port\n");
 		}
 
-		printf("\tc = %X | %c\n",c,c);
+		printf("\tc = %X | %c | %d\n",c,c,c);
 
 		switch (state)
 		{
@@ -346,14 +346,20 @@ int llread(int fd, char * buffer)
 				if (sequenceNumber == 0)
 					state = C_RCV;
 				else
+				{
 					printf("Unexpected sequence number\n");
+					printf("Sequence number is %u\n", sequenceNumber);
+				}
 				break;
 
 				case (C1):
 				if (sequenceNumber == 1)
 					state = C_RCV;
 				else
+				{
 					printf("Unexpected sequence number\n");
+					printf("Sequence number is %u\n", sequenceNumber);
+				}
 				break;
 
 				default:
@@ -373,14 +379,20 @@ int llread(int fd, char * buffer)
 				if (sequenceNumber == 0)
 					state = BCC_OK;
 				else
+				{
 					printf("Unexpected sequence number\n");
+					printf("Sequence number is %u\n", sequenceNumber);
+				}
 				break;
 
 				case (A^C1):
 				if (sequenceNumber == 1)
 					state = BCC_OK;
 				else
+				{
 					printf("Unexpected sequence number\n");
+					printf("Sequence number is %u\n", sequenceNumber);
+				}
 				break;
 
 				default:
@@ -406,17 +418,18 @@ int llread(int fd, char * buffer)
 
 	printf("Done parsing\n");
 
-	char xr = calculateParity(buffer, index - 2);
+	unsigned char xr = calculateParity(buffer, index - 2);
 
 	if (xr == buffer[index - 1])
 	{
 		printf("Success reading Packet\n");
 	}
+
 }
 
-char calculateParity (char* array, int length)
+unsigned char calculateParity (unsigned char* array, int length)
 {
-	char xr;
+	unsigned char xr;
 
 	if (length < 2) {
 		xr = array[0];
@@ -439,4 +452,48 @@ void switchSequenceNumber ()
 		sequenceNumber = 0;
 	else
 		sequenceNumber = 1;
+}
+
+int sendSuperPacket(int fd, unsigned char c)
+{
+	unsigned char* header = (unsigned char *) malloc (5*sizeof(unsigned char));
+	
+	printf("header[0] = %X\n",header[0]);
+	printf("header[2] = %X\n",header[2]);
+	header[0] = F;
+	header[1] = A;
+	if (c == RR)
+	{
+		if (sequenceNumber == 0)
+		{	printf("RR0\n");
+			header[2] = RR0;
+		}
+		else
+		{	printf("RR1\n");
+			header[2] = RR1;
+		}
+	} else if (c == REJ)
+	{
+		printf("REJ\n");
+		if (sequenceNumber == 0)
+		{	printf("REJ0\n");
+			header[2] = REJ0;
+		}
+		else
+		{	printf("REJ1\n");
+			header[2] = REJ1;
+		}
+	} else 
+	{
+		header[2] = c;
+	}
+	
+	printf("header[2] = %X\n",header[2]);
+	
+	header[3] = header[1] ^header[2];
+	header[4] = F;
+	
+	int ret = llwrite(fd, header, 5);
+	
+	return ret;
 }

@@ -42,7 +42,7 @@ int main(int argc, char** argv);
  * @param data Bytes to send
  * @return 0 on success, -1 otherwise
  */
-int writeControlPacket(int fd, int c, int t, int l, char* data);
+int writeControlPacket(int fd, int c, int t, int l,unsigned  char* data);
 
 /**
  * @brief Receives a Control Packet through the Serial Port
@@ -57,7 +57,7 @@ int writeControlPacket(int fd, int c, int t, int l, char* data);
  * @param data Bytes to receive
  * @return 0 on success, -1 otherwise
  */
-int readControlPacket(int fd, int c, int t, int l, char* data);
+int readControlPacket(unsigned char* buffer, unsigned char* data, int b_length);
 
 /**
  * @brief Sends an Information Packet through the Serial Port
@@ -76,7 +76,7 @@ int readControlPacket(int fd, int c, int t, int l, char* data);
  * @param data Char array to transmit
  * @return 0 on success, -1 otherwise
  */
-int writeInfoPacket(int fd, int length, char* data);
+int writeInfoPacket(int fd, int length, unsigned char* data);
 
 /**
  * @brief Reads an Information Packet from the Serial Port
@@ -87,7 +87,7 @@ int writeInfoPacket(int fd, int length, char* data);
  * @param data [description]
  * @return [description]
  */
-int readInfoPacket(int fd, char* data);
+int readInfoPacket(unsigned char * buffer, unsigned char* data);
 
 /**
  * @brief Reads a Packet
@@ -100,4 +100,4 @@ int readInfoPacket(int fd, char* data);
  * 
  * @return 0 on success, -1 otherwise
  */
-int readPacket(int fd, char* data);
+int readPacket(int fd, unsigned char* data);

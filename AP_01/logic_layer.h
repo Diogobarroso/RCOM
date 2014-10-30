@@ -2,6 +2,7 @@
 
 #include "application.h"
 #include "serial.h"
+#include "stdio.h"
 
 /**
  * @brief Enumeration of the states the State Machine applies
@@ -24,6 +25,14 @@ enum states
 #define SET 0x03
 #define UA 0x07
 
+#define RR 0x10
+#define RR0 0x05
+#define RR1 0x85
+
+#define REJ 0x11
+#define REJ0 0x01
+#define REJ1 0x81
+
 #define C0 0x00
 #define C1 0x40
 
@@ -37,7 +46,7 @@ enum states
  * 
  * @return File Descriptor to the Serial Port
  */
-int llOpen(char * port, int mode);
+int llOpen(unsigned char * port, int mode);
 
 /**
  * @brief Write to the Serial Port
@@ -56,7 +65,7 @@ int llOpen(char * port, int mode);
  * @param length Length of the buffer (in bytes)
  * @return Number of bytes written on success, -1 on error
  */
-int llwrite(int fd, char * buffer, int length);
+int llwrite(int fd, unsigned char * buffer, int length);
 
 /**
  * @brief Reads from the Serial Port
@@ -68,7 +77,7 @@ int llwrite(int fd, char * buffer, int length);
  * 
  * @return Size of the Array on success, -1 on error
  */
-int llread(int fd, char * buffer);
+int llread(int fd, unsigned char * buffer);
 
 /**
  * @brief Calculates parity of array
@@ -79,7 +88,7 @@ int llread(int fd, char * buffer);
  * 
  * @return Result of the parity check
  */
-char calculateParity (char* array, int length);
+unsigned char calculateParity (unsigned char* array, int length);
 
 /**
  * @brief Switches the Sequence Number
@@ -96,7 +105,7 @@ void switchSequenceNumber ();
  * 
  * @return [description]
  */
-int byteStuffing (char* array, int length);
+int byteStuffing (unsigned char* array, int length);
 
 /**
  * @brief Destuffs the byte array
@@ -107,4 +116,6 @@ int byteStuffing (char* array, int length);
  * 
  * @return [description]
  */
-int byteDeStuffing (char * array, int length);
+int byteDeStuffing (unsigned char * array, int length);
+
+int sendSuperPacket(int fd,unsigned  char c);

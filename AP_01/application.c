@@ -5,6 +5,7 @@
 #include "logic_layer.h"
 #include "serial.h"
 
+
 int sequencePacketNumber;
 
 void alarmHandler(int signo)
@@ -26,10 +27,7 @@ int main(int argc, char** argv)
 		exit (1);
 	}
 	*/
-	/*
-	struct applicationLayer appLayer;
-	struct linkLayer lLayer;
-*/
+	
 	// Alarm handler setup -----------------
 	struct sigaction act;
 	act.sa_handler = alarmHandler;
@@ -50,8 +48,18 @@ int main(int argc, char** argv)
 		printf("Serial Port opened\n");
 
 		char* startControlPacket = (char*) malloc (23 * sizeof(char));
+		char* packet = (char*) malloc (PACKET_SIZE * sizeof(char));
 		
-		int readResult = readControlPacket(fd, C_START, FILE_NAME, 20, startControlPacket);
+		int readResult = readPacket(fd, startControlPacket);
+		do
+		{
+			readResult = readPacket(fd, packet);
+			if (readResult < 0)
+				sendSuperPacket(fd,REJ);
+			else
+				sendSuperPacket(fd,RR);
+			
+		} while(readResult != 2);
 		
 		printf("readResult = %d\n", readResult);
 		printf("File Name = %s\n", startControlPacket);
@@ -70,7 +78,6 @@ int main(int argc, char** argv)
 		FILE* fr = fopen(argv[3], "rb");
 
 		char buffer[PACKET_SIZE];
-		char dataPacket[4+PACKET_SIZE];
 		int bytesRead = 0, total = 0, index = 0;
 
 		while (!feof(fr))
@@ -83,9 +90,9 @@ int main(int argc, char** argv)
 			}
 				
 			total += bytesRead;
-			total += fread(dataPacket, 1, PACKET_SIZE, fr);
-printf("Going to fread\n");
-			writeInfoPacket(fd, PACKET_SIZE, dataPacket);
+			//total += fread(dataPacket, 1, PACKET_SIZE, fr);
+			
+			//writeInfoPacket(fd, PACKET_SIZE, dataPacket);
 
 		}
 		printf("File is %d bytes long\n", total);
@@ -100,9 +107,9 @@ printf("Going to fread\n");
 	}
 }
 
-int writeControlPacket(int fd, int c, int t, int l, char* data)
+int writeControlPacket(int fd, int c, int t, int l, unsigned char* data)
 {
-	char * controlPacket = (char*) malloc ((3 + l) * sizeof (char));
+	unsigned char * controlPacket = (unsigned char*) malloc ((3 + l) * sizeof (unsigned char));
 	controlPacket[0] = c;
 	controlPacket[1] = t;
 	controlPacket[2] = l;
@@ -123,14 +130,14 @@ int writeControlPacket(int fd, int c, int t, int l, char* data)
 		return 0;
 }
 
-int writeInfoPacket(int fd, int length, char* data)
+int writeInfoPacket(int fd, int length, unsigned char* data)
 {
 
 	//char * infoPacket = (char*) malloc ((PACKET_SIZE) * sizeof (char));
 	data[0] = 1;
 	data[1] = (++sequencePacketNumber) % 255;
-	data[2] = PACKET_SIZE / 256;
-	data[3] = PACKET_SIZE % 256;
+	data[2] = PACKET_SIZE / 255;
+	data[3] = PACKET_SIZE % 255;
 
 	int writeReturn = llwrite(fd, data, length);
 
@@ -141,115 +148,53 @@ int writeInfoPacket(int fd, int length, char* data)
 }
 
 
-int readControlPacket(int fd, int c, int t, int l, char* data)
+int readControlPacket(unsigned char* buffer, unsigned char* data, int b_length)
 {
-
-	printf("readControlPacket(%d, %d, %d, %d, data)\n", fd, c, t, l);
-
-	char * controlPacket = (char*) malloc ((3 + l) * sizeof (char));
-
-	int readReturn = llread (fd, controlPacket);
-
-	if (controlPacket[0] != c)
-	{
-		printf("controlPacket[0] = %d\n", controlPacket[0]);
-		return -1;
-	}
-	if (controlPacket[1] != t)
-	{
-		printf("controlPacket[1] = %d\n", controlPacket[1]);
-		return -1;
-	}
-	if (controlPacket[2] != l)
-	{
-		printf("controlPacket[2] = %d\n", controlPacket[2]);
-		return -1;
-	}
-
 	printf("Data Size = %d\n", sizeof (data));
-	memcpy(data, controlPacket + 3, l);
+	memcpy(data, buffer + 3, b_length - 3);
 
 	return 0;
 }
 
-int readInfoPacket(int fd, char* data)
+int readInfoPacket(unsigned char * buffer,unsigned char* data)
 {
-	int i = 0;
-	float maxI = sizeof(char)/sizeof(char[0]);
+	memcpy(data,buffer + 4, PACKET_SIZE - 4);
 
-	printf("Info Packet read, it is a ");
-	if(data[1] == (sequencePacketNumber +1))
+	return 0;
+}
+
+int readPacket(int fd, unsigned char* data)
+{
+	unsigned char * buffer = (unsigned char *) malloc (PACKET_SIZE + 5);
+	
+	llread(fd, buffer);
+	
+	printf("buffer[0] = %X\n", buffer[0]);
+	
+	if(buffer[0] == C_INFO)
 	{
+		printf("INFO\n");
+		readInfoPacket(buffer, data);
 		switchSequenceNumber();
-
-		char * infoPacket = (char*) malloc (PACKET_SIZE * sizeof (char));
-
-		int readReturn = llread (fd, infoPacket); //Already read in the function below??
-
-
-		if(infoPacket[1] == C_START && infoPacket[2] == FILE_NAME)
-		{
-			printf("Start Packet\n");
-			for(; i < maxI; ++i)
-				printf("startPacket[%u]: %s\n", i, data[i]);
-			
-		}
-		else if(infoPacket[1] == C_END && infoPacket[2] == FILE_SIZE)
-		{
-			printf("End Packet\n");
-			for(; i < maxI; ++i)
-				printf("endPacket[%u]: %s\n", i, data[i]);
-		}
-		else
-		{
-			printf("Problem reading Info Packet.\nRejecting...\n");
-			char * rej = (char *) malloc (5 * sizeof(char));
-			rej[0] = 1;
-			rej[1] = (sequencePacketNumber + 1) % 256;
-			rej[2] = 129;
-			rej[3] = calculateParity(&rej[0], 3);
-			rej[4];// <----------------------
-			return -1;
-		}
-
-		memcpy(data,infoPacket + 3, PACKET_SIZE - 3);
-		char * rr = (char *) malloc (5 * sizeof(char));
-		rr[0] = 1;
-		rr[1] = (sequencePacketNumber + 1) % 256;
-//		if(sequenceNumber)
-//			rr[2] = 134;
-//		else
-			rr[2] = 5;
-		rr[3] = calculateParity(&rr[0], 3);
-		rr[4]; //<-------------------------
+		
+		sequencePacketNumber++;
+		return 0;
 	}
-	else
+	else if(buffer[0] == C_START)
 	{
-		printf("Error in the sequence\nRejecting...\n");
-		char * rej = (char *) malloc (5 * sizeof(char));
-		rej[0] = 1;
-		rej[1] = (sequencePacketNumber + 1) % 256;
-//		if(sequenceNumber)
-//			rej[2] = 134;
-//		else
-			rej[2] = 5;
-		rej[3]; // <----------------------
+		printf("START\n");
+		readControlPacket(buffer, data, 20);
+		sequencePacketNumber++;
+		return 1;
+	}
+	else if (buffer[0] == C_END)
+	{
+		printf("END\n");
+		readControlPacket(buffer, data, sizeof(int));
+		sequencePacketNumber++;
+		return 2;
+	} else {
+		printf("FAIL\n");
 		return -1;
 	}
-
-	sequencePacketNumber++;
-	return 0;
-		
-}
-
-int readPacket(int fd, char* data)
-{
-	int success;
-	char * buffer = llread(fd, buffer);
-	if(buffer[0] == C_INFO)
-		success = readInfoPacket(fd, data);
-	else if(buffer[0] == C_START || buffer[0] == C_END)
-		success = readControlPacket(fd, buffer[0], buffer[1], buffer[2], buffer[3]);
-
-	return success;
 }
