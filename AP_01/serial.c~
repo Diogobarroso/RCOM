@@ -53,15 +53,15 @@ void closeSerial (int file_descriptor, struct termios * oldtio)
 	printf("Connection closed\n");
 }
 
-int writeSerial (unsigned char message[], int messageSize, int file_descriptor)
+int writeSerial (char message[], int messageSize, int file_descriptor)
 {
 	int writeResult = write(file_descriptor, message, messageSize);
 	return writeResult;
 }
 
-int readSerial (int file_descriptor, unsigned char * c)
+int readSerial (int file_descriptor, char * c)
 {
-	unsigned char buf[1];
+	char buf[1];
 	int res;
 	int STOP = FALSE;
 	while(STOP == FALSE)

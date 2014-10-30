@@ -63,7 +63,7 @@ void closeSerial (int file_descriptor, struct termios * oldtio);
  * @param file_descriptor File Descriptor for the Serial Port
  * @return Number of bytes written
  */
-int writeSerial (unsigned char message[], int messageSize, int file_descriptor);
+int writeSerial (char message[], int messageSize, int file_descriptor);
 
 /**
  * @brief Reads from the Serial Port
@@ -74,4 +74,4 @@ int writeSerial (unsigned char message[], int messageSize, int file_descriptor);
  * 
  * @return 1 on success, -1 otherwise
  */
-int readSerial (int file_descriptor, unsigned char * c);
+int readSerial (int file_descriptor, char * c);

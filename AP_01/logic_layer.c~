@@ -453,7 +453,7 @@ void switchSequenceNumber()
 		sequenceNumber = 1;
 }
 
-
+<<<<<<< Updated upstream
 int sendSuperPacket(int fd, unsigned char c)
 {
 	unsigned char* header = (unsigned char *) malloc (5*sizeof(unsigned char));
@@ -497,8 +497,6 @@ int sendSuperPacket(int fd, unsigned char c)
 	
 	return ret;
 }
-
-
 int readSuperPacket(int fd)
 {
 	int parsing = 1, rr = 0;

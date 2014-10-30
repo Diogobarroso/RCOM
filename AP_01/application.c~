@@ -78,9 +78,13 @@ int main(int argc, char** argv)
 		FILE* fr = fopen(argv[3], "rb");
 
 		char buffer[PACKET_SIZE];
+<<<<<<< Updated upstream
+		int bytesRead = 0, total = 0, index = 0;
 
+=======
 		int bytesRead = 0, total = 0, index = 0, tries = 0;
 		
+>>>>>>> Stashed changes
 		while (!feof(fr))
 		{
 			bytesRead = fread(buffer, 1, PACKET_SIZE, fr);
@@ -92,6 +96,11 @@ int main(int argc, char** argv)
 			}
 				
 			total += bytesRead;
+<<<<<<< Updated upstream
+			//total += fread(dataPacket, 1, PACKET_SIZE, fr);
+			
+			//writeInfoPacket(fd, PACKET_SIZE, dataPacket);
+=======
 
 			writeInfoPacket(fd, bytesRead, buffer);
 
@@ -110,7 +119,7 @@ int main(int argc, char** argv)
 					writeInfoPacket(fd,bytesRead,buffer);
 				}
 			}
-
+>>>>>>> Stashed changes
 
 		}
 
@@ -154,6 +163,14 @@ int writeControlPacket(int fd, int c, int t, int l, unsigned char* data)
 
 int writeInfoPacket(int fd, int length, unsigned char* data)
 {
+
+<<<<<<< Updated upstream
+	//char * infoPacket = (char*) malloc ((PACKET_SIZE) * sizeof (char));
+	data[0] = 1;
+	data[1] = (++sequencePacketNumber) % 255;
+	data[2] = PACKET_SIZE / 255;
+	data[3] = PACKET_SIZE % 255;
+=======
 	unsigned char * infoPacket = (unsigned char*) malloc ((PACKET_SIZE + 4) * sizeof (unsigned char));
 	infoPacket[0] = 1;
 	infoPacket[1] = (++sequencePacketNumber) % 255;
@@ -169,6 +186,8 @@ int writeInfoPacket(int fd, int length, unsigned char* data)
 	{
 		printf("infoPacket[%u] = %X | %c\n",i,infoPacket[i],infoPacket[i]);
 	}
+	
+>>>>>>> Stashed changes
 
 	int writeReturn = llwrite(fd, infoPacket, length + 4);
 
@@ -179,18 +198,52 @@ int writeInfoPacket(int fd, int length, unsigned char* data)
 }
 
 
+<<<<<<< Updated upstream
 int readControlPacket(unsigned char* buffer, unsigned char* data, int b_length)
 {
+=======
+int readControlPacket(int fd, int c, int t, int l, unsigned char* data)
+{
+
+	printf("readControlPacket(%d, %d, %d, %d, data)\n", fd, c, t, l);
+
+	unsigned char * controlPacket = (unsigned char*) malloc ((3 + l) * sizeof (unsigned char));
+
+	int readReturn = llread (fd, controlPacket);
+
+	if (controlPacket[0] != c)
+	{
+		printf("controlPacket[0] = %d\n", controlPacket[0]);
+		return -1;
+	}
+	if (controlPacket[1] != t)
+	{
+		printf("controlPacket[1] = %d\n", controlPacket[1]);
+		return -1;
+	}
+	if (controlPacket[2] != l)
+	{
+		printf("controlPacket[2] = %d\n", controlPacket[2]);
+		return -1;
+	}
+
+>>>>>>> Stashed changes
 	printf("Data Size = %d\n", sizeof (data));
 	memcpy(data, buffer + 3, b_length - 3);
 
 	return 0;
 }
 
-
+<<<<<<< Updated upstream
 int readInfoPacket(unsigned char * buffer,unsigned char* data)
 {
 	memcpy(data,buffer + 4, PACKET_SIZE - 4);
+=======
+int readInfoPacket(int fd, unsigned char* data)
+{
+	int i = 0;
+	float maxI = sizeof(unsigned char)/sizeof(char[0]);
+>>>>>>> Stashed changes
 
 	return 0;
 }
@@ -207,7 +260,9 @@ int readPacket(int fd, unsigned char* data)
 	{
 		printf("INFO\n");
 		readInfoPacket(buffer, data);
-		switchSequenceNumber();		
+		switchSequenceNumber();
+<<<<<<< Updated upstream
+		
 		sequencePacketNumber++;
 		return 0;
 	}
@@ -227,5 +282,56 @@ int readPacket(int fd, unsigned char* data)
 	} else {
 		printf("FAIL\n");
 		return -1;
-	}	
+	}
+=======
+
+		unsigned char * infoPacket = (unsigned char*) malloc (PACKET_SIZE * sizeof (unsigned char));
+
+		int readReturn = llread (fd, infoPacket); //Already read in the function below??
+
+
+		if(infoPacket[1] == C_START && infoPacket[2] == FILE_NAME)
+		{
+			printf("Start Packet\n");
+			for(; i < maxI; ++i)
+				printf("startPacket[%u]: %s\n", i, data[i]);
+			
+		}
+		else if(infoPacket[1] == C_END && infoPacket[2] == FILE_SIZE)
+		{
+			printf("End Packet\n");
+			for(; i < maxI; ++i)
+				printf("endPacket[%u]: %s\n", i, data[i]);
+		}
+		else
+		{
+			printf("Problem reading Info Packet.\nRejecting...\n");
+			unsigned char * rej = (unsigned char *) malloc (5 * sizeof(unsigned char));
+			rej[0] = 1;
+			rej[1] = (sequencePacketNumber + 1) % 256;
+			rej[2] = 129;
+			rej[3] = calculateParity(&rej[0], 3);
+			rej[4];// <----------------------
+			return -1;
+		}
+
+		memcpy(data,infoPacket + 3, PACKET_SIZE - 3);
+	}
+
+	sequencePacketNumber++;
+	return 0;
+		
+}
+
+int readPacket(int fd, unsigned char* data)
+{
+	int success;
+	unsigned char * buffer = llread(fd, buffer);
+	if(buffer[0] == C_INFO)
+		success = readInfoPacket(fd, data);
+	else if(buffer[0] == C_START || buffer[0] == C_END)
+		success = readControlPacket(fd, buffer[0], buffer[1], buffer[2], buffer[3]);
+
+	return success;
+>>>>>>> Stashed changes
 }

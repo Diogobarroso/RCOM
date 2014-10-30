@@ -59,8 +59,11 @@ int writeControlPacket(int fd, int c, int t, int l,unsigned  char* data);
  * @param data Bytes to receive
  * @return 0 on success, -1 otherwise
  */
-
+<<<<<<< Updated upstream
 int readControlPacket(unsigned char* buffer, unsigned char* data, int b_length);
+=======
+int readControlPacket(int fd, int c, int t, int l, unsigned char* data);
+>>>>>>> Stashed changes
 
 /**
  * @brief Sends an Information Packet through the Serial Port
@@ -90,9 +93,11 @@ int writeInfoPacket(int fd, int length, unsigned char* data);
  * @param data [description]
  * @return [description]
  */
-
+<<<<<<< Updated upstream
 int readInfoPacket(unsigned char * buffer, unsigned char* data);
-
+=======
+int readInfoPacket(int fd, unsigned char* data);
+>>>>>>> Stashed changes
 
 /**
  * @brief Reads a Packet
