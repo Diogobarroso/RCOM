@@ -216,11 +216,11 @@ int readInfoPacket(int fd, char* data)
 		char * rr = (char *) malloc (5 * sizeof(char));
 		rr[0] = 1;
 		rr[1] = (sequencePacketNumber + 1) % 256;
-		if(sequenceNumber)
-			rr[2] = 134;
-		else
+//		if(sequenceNumber)
+//			rr[2] = 134;
+//		else
 			rr[2] = 5;
-		rr[3] = calculateParity(&rej[0], 3);
+		rr[3] = calculateParity(&rr[0], 3);
 		rr[4]; //<-------------------------
 	}
 	else
@@ -229,10 +229,10 @@ int readInfoPacket(int fd, char* data)
 		char * rej = (char *) malloc (5 * sizeof(char));
 		rej[0] = 1;
 		rej[1] = (sequencePacketNumber + 1) % 256;
-		if(sequenceNumber)
-			rr[2] = 134;
-		else
-			rr[2] = 5;
+//		if(sequenceNumber)
+//			rej[2] = 134;
+//		else
+			rej[2] = 5;
 		rej[3]; // <----------------------
 		return -1;
 	}
