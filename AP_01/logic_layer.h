@@ -36,6 +36,10 @@ enum states
 #define C0 0x00
 #define C1 0x40
 
+#define ESCAPE 0x7d
+#define STUFCHAR 0x20
+
+
 /**
  * @brief Opens the connection through the Serial Port
  * @details Uses an elaborated algorithm to open the connection, involving voodoo dolls and stuff
@@ -105,7 +109,7 @@ void switchSequenceNumber ();
  * 
  * @return [description]
  */
-int byteStuffing (unsigned char* array, int length);
+int byteStuffing(unsigned char* array, char* stuffed_message, int length);
 
 /**
  * @brief Destuffs the byte array
@@ -116,6 +120,6 @@ int byteStuffing (unsigned char* array, int length);
  * 
  * @return [description]
  */
-int byteDeStuffing (unsigned char * array, int length);
+int byteDeStuffing(unsigned char * array, char *destufed_message, int length);
 
 int sendSuperPacket(int fd,unsigned  char c);

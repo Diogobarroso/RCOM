@@ -272,7 +272,10 @@ int llwrite(int fd, unsigned char * buffer, int length)
 	printf("\tBCC->%X\n\tF->%X\n", sequence[length + 5], sequence[length + 6]);
 */
 
-	int writeReturn = writeSerial(sequence, (7 + length), fd);
+	char *stuffed_message;
+	int bytes = byteStuffing(sequence, stuffed_message, 6 + length);
+	int writeReturn = writeSerial(stuffed_message, bytes, fd);
+
 
 
 	if (writeReturn != (7 + length))
@@ -417,7 +420,9 @@ int llread(int fd, unsigned char * buffer)
 
 	printf("Done parsing\n");
 
-	unsigned char xr = calculateParity(buffer, index - 2);
+	char *destuffed_message;
+	byteDeStuffing(buffer, destuffed_message, index);
+	unsigned char xr = calculateParity(destuffed_message, index);
 
 	if (xr == buffer[index - 1])
 	{
@@ -640,4 +645,59 @@ int readSuperPacket(int fd)
 			}
 		}
 	return rr;
+}
+
+
+
+int byteStuffing(unsigned char* array, char* stuffed_message, int length)
+{
+	int special_chars = 0;
+	int i = 1;
+	
+	for(i; i < length - 1; i++)
+		if(array[i] == ESCAPE || array[i] == F)
+			special_chars++;
+			
+	int stuffed_size = length + special_chars;
+	stuffed_message = (char *) malloc(sizeof(char) * stuffed_size);
+	
+	stuffed_message[0] = array[0];
+	i = 1;
+	int stuffed_message_current_index = i;
+	
+	
+	for(i; i < length - 1; i++)
+	{
+		if(array[i] == ESCAPE)
+		{
+			stuffed_message[stuffed_message_current_index++] = ESCAPE;
+			stuffed_message[stuffed_message_current_index] = ESCAPE ^ STUFCHAR;
+		} else if(array[i] == F) {
+			stuffed_message[stuffed_message_current_index++] = ESCAPE;
+			stuffed_message[stuffed_message_current_index] = F ^ STUFCHAR;
+		} else 
+			stuffed_message[stuffed_message_current_index++] = array[i];
+	}
+	
+	stuffed_message[stuffed_message_current_index] = array[i];
+	return sizeof(char) * stuffed_size;
+}
+
+
+
+int byteDeStuffing(unsigned char * array, char *destufed_message, int length)
+{
+	destufed_message = (char *) malloc(sizeof(char) * length);
+	
+	int i = 0;
+	int current_destuff_index = 0;
+	for(i; i < length; i++)
+	{
+		if(array[i] == ESCAPE)
+			destufed_message[current_destuff_index++] = array[i + 1] ^ STUFCHAR;
+		else
+			destufed_message[current_destuff_index++] = array[i];
+	}
+	
+	return sizeof(char) * length;
 }
