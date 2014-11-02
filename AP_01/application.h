@@ -15,18 +15,6 @@
 
 #define PACKET_SIZE 200
 
-/**
- * @brief Structure containing Serial Connection properties
- * @details Holds the file descriptor and status of the program
- * 
- */
-struct applicationLayer {
-
-	int fileDescriptor;	/** File descriptor for the Serial Port */
-
-	int status; /** Client (0) / Server (1) */
-};
-
 int main(int argc, char** argv);
 
 /**

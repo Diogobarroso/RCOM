@@ -14,27 +14,6 @@
 #define TRUE 1
 
 /**
- * @brief Structure containing Serial Connection properties
- * @details Holds the port name, baudRate, sequenceNumber of the packet being transmitted, timeout value, number of retries for the transmission and the previous Serial Port configurations
- * 
- */
-struct linkLayer {
-	char port[20];	/** Port name */
-
-	int baudRate; /** Transmission speed */
-
-	unsigned int sequenceNumber; /** Sequence number: 0, 1 */
-
-	unsigned int timeout; /** Timeout value */
-
-	unsigned int numTransmissions; /** Number of retries for the transmission */
-
-	char frame[5]; /** Frame */
-
-	struct termios * oldtio; /** Previous Serial Port configurations */
-};
-
-/**
  * @brief Opens Serial Port
  * @details Starts connection through serial port
  * 
