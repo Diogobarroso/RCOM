@@ -1,0 +1,1 @@
+void printArray(unsigned char * array, int arraySize, char* arrayName);
