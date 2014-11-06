@@ -3,7 +3,6 @@
 int sequenceNumber;
 int nTriesAllowed;
 int alarmTime;
-
 int llOpen(unsigned char* port, int mode)
 {
 	sequenceNumber = 0;
@@ -11,7 +10,8 @@ int llOpen(unsigned char* port, int mode)
 	alarmTime = 3;
 
 	int file_descriptor = openSerial(port);
-
+	
+	global_mode = mode;
 	if (mode == SERVER)
 	{
 		int nTries = 0;
@@ -56,29 +56,69 @@ int llOpen(unsigned char* port, int mode)
 	return -1;
 }
 
+
+
+int llClose(int file_descriptor)
+{
+	if(global_mode == SERVER)
+	{
+		//Send a DISC byte to the client
+		writeSupervisionMessage(file_descriptor, DISC);
+		alarm(alarmTime);
+		char controlField;
+		int readResult = readSupervisionMessage(file_descriptor, &controlField);
+
+		if (readResult == 0 && controlField == DISC)
+		{
+			writeSupervisionMessage(file_descriptor, UA);
+			return file_descriptor;
+		}
+		
+	} else if(global_mode == CLIENT) 
+	{
+		char controlField;
+		int readResult = readSupervisionMessage(file_descriptor, &controlField);
+
+		if (readResult == 0 && controlField == DISC)
+		{
+			writeSupervisionMessage(file_descriptor, DISC);
+			return file_descriptor;
+		}
+	}
+
+	printf("llClose\n");
+
+	closeSerial(file_descriptor);
+}
+
 int llWrite(int file_descriptor, unsigned char* packet, int packetSize)
 {
 	int nTries = 0;
-
+	//alarm(alarmTime);
 	while (nTries < nTriesAllowed)
 	{
-		//alarm(alarmTime);
+		alarm(alarmTime);
+		printf("before alarm!\n");
 
+		
+		//printf("before writeReturn!\n");
 		int writeReturn = writeInformationMessage(file_descriptor, packet, packetSize);
+		printf("After writeReturn! It returns %d\n", writeReturn);
 
 		unsigned char controlField;
 		int readResult = readSupervisionMessage(file_descriptor, &controlField);
+
 
 		if (readResult == 0 && ( (controlField == RR0 && sequenceNumber == 0) || (controlField == RR1 && sequenceNumber == 1) ))
 		{
 			return writeReturn;
 		}
-		else if (readResult < 0)
+		else
 		{
 			nTries++;
+			printf("Increased nTries to %d\n",nTries);
 		}
 	}
-
 	return(-1);
 }
 
@@ -91,7 +131,6 @@ int llRead(int file_descriptor, unsigned char* packet)
 		int readResult = readInformationMessage(file_descriptor, packet);
 
 
-
 		if (readResult > 0)
 		{
 			if (sequenceNumber == 0)
@@ -102,10 +141,18 @@ int llRead(int file_descriptor, unsigned char* packet)
 
 		} else if (readResult < 0)
 		{
+			printf("rej: sequence number = %d\n", sequenceNumber);
 			if (sequenceNumber == 0)
+			{
+				printf("sent rej0\n");
 				writeSupervisionMessage(file_descriptor, REJ0);
+			}
 			else if (sequenceNumber == 1)
+			{
+				printf("sent rej1\n");
 				writeSupervisionMessage(file_descriptor, REJ1);
+			}
+			return -1;
 		}
 	}
 
@@ -385,14 +432,11 @@ int writeInformationMessage(int file_descriptor, unsigned char * packet, int pac
 
 	memcpy(informationMessage + IMH_SIZE, packet, packetSize);
 
-	informationMessage[IMH_SIZE + packetSize] = calculateParity(packet, packetSize);
+	informationMessage[IMH_SIZE + packetSize] = calculateParity(packet, packetSize) ;
 
 	informationMessage[IMH_SIZE + packetSize + 1] = FLAG;
 
-	//printArray(informationMessage + IMH_SIZE,  packetSize ,"Packet");
-
 	unsigned char * stuffedInformationMessage;
-
 	int stuffedSize = byteStuffing(informationMessage, &stuffedInformationMessage, (IMH_SIZE + packetSize + IMT_SIZE));
 
 	int writeReturn = writeSerial(file_descriptor, stuffedInformationMessage, stuffedSize);
@@ -412,7 +456,7 @@ int readInformationMessage(int file_descriptor, unsigned char * packet)
 	int messageIndex = 0;
 
 
-	int readResult = readSerial(file_descriptor, &c);
+/**	int readResult = readSerial(file_descriptor, &c);
 
 	if (readResult < 0)
 	{
@@ -435,14 +479,17 @@ int readInformationMessage(int file_descriptor, unsigned char * packet)
 
 		message[messageIndex++] = c;
 
-	} while (c != FLAG);
+	} while (c != FLAG);*/
 
 
 	int i = 0;
-
 	while (1)
 	{
-		c = message[i++];
+		int readResult = readSerial(file_descriptor, &c);
+		if(readResult < 0)
+			return -1;
+		
+		//c = message[i++];
 
 		switch (state)
 		{
@@ -452,6 +499,8 @@ int readInformationMessage(int file_descriptor, unsigned char * packet)
 				{
 					case (FLAG):
 					state = FLAG_RCV;
+					memset(message, 0, sizeof(message));
+					index = 0;
 					break;
 				}
 				break;
@@ -541,7 +590,7 @@ int readInformationMessage(int file_descriptor, unsigned char * packet)
 					{
 
 						unsigned char * destufed_message;
-						int length = byteDeStuffing(packet, &destufed_message, index);
+						int length = byteDeStuffing(message, &destufed_message, index);
 
 						unsigned char xr = calculateParity(destufed_message, length - 1);
 
@@ -561,7 +610,7 @@ int readInformationMessage(int file_descriptor, unsigned char * packet)
 					break;
 
 					default:
-					packet[index++] = c;
+					message[index++] = c;
 					break;
 				}
 				break;
@@ -625,12 +674,12 @@ int byteStuffing(unsigned char* array, unsigned char** stuffed_message, int leng
 	{
 		if(array[i] == ESCAPE)
 		{
-			printf("ESCAPE found\n");
+			//printf("ESCAPE found\n");
 			(*stuffed_message)[stuffed_message_current_index++] = ESCAPE;
 			(*stuffed_message)[stuffed_message_current_index++] = ESCAPE ^ STUFCHAR;
 		} else if(array[i] == FLAG)
 		{
-			printf("FLAG found\n");
+			//printf("FLAG found\n");
 			(*stuffed_message)[stuffed_message_current_index++] = ESCAPE;
 			(*stuffed_message)[stuffed_message_current_index++] = FLAG ^ STUFCHAR;
 		} else
@@ -659,8 +708,9 @@ int byteDeStuffing(unsigned char * array, unsigned char **destufed_message, int 
 		else
 			(*destufed_message)[current_destuff_index++] = array[i];
 	}
-
+/*
 	printArray(array, length, "Original");
 	printArray(*destufed_message, current_destuff_index, "DeStuffed");
+*/
 	return sizeof(char) * current_destuff_index;
 }

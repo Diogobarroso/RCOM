@@ -17,18 +17,35 @@ int main(int argc, char** argv)
 		printf("Error in sigaction\n");
 		return(-1);
 	}
-
-	packageSize = 200;
+	printf("Set alarm\n");
 
 	int result = -1;
-
+	printf("Setting client/server\n");
 	if (strcmp("client", argv[2]) == 0)
 	{
+		int tmp = atoi(argv[3]);
+		if(tmp == 0 || tmp > MAX_PACKAGE_SIZE)
+		{
+			printf("[!] Error! No valid conversion could be performed! packageSize is now 200");
+			packageSize = 200;
+		} else
+			packageSize = tmp;
 		result = client(argv[1]);
 	}
 
 	if (strcmp("server", argv[2]) == 0)
 	{
+		int tmp = atoi(argv[4]);
+		if(tmp == 0 || tmp > MAX_PACKAGE_SIZE)
+		{
+			printf("[!] Error! No valid conversion could be performed! PackageSize is now 200\n");
+			packageSize = 200;
+
+		} else
+			packageSize = tmp;
+
+		printf("Package Size: %d\n", packageSize);
+
 		result = server(argv[1], argv[3]);
 	}
 
@@ -52,6 +69,10 @@ int client(char * port)
 	unsigned char* data;
 
 	readReturn = readPackage(file_descriptor, &data, &bytesRead);
+/**	if(readReturn < 0) {
+		//llClose(file_descriptor);
+		exit(1);
+	}*/
 
 	char * new_file_name;
 	char * file_name_header = "copy_";
@@ -70,24 +91,32 @@ int client(char * port)
 		return(-1);
 	}
 
-	do
-	{
+	while(1)
+	{	
 		readReturn = readPackage(file_descriptor, &data, &bytesRead);
+		if(readReturn == C_END)
+			break;
+		else 
+		{
+			if(readReturn != -1) {
+				//printArray(data, bytesRead, "Package");
 
-		printArray(data, bytesRead, "Package");
+				fwrite(data, bytesRead, 1, fo);
+				//getchar();
 
-		fwrite(data, bytesRead, 1, fo);
-
-		printf("\n\n\n");
-	} while (readReturn != C_END);
+				printf("\n\n\n");
+			}
+		}
+	} //while (readReturn != C_END);
+	llClose(file_descriptor);
 
 	return 0;
 }
 
 int server(char * port, char* file_name)
 {
-	int file_descriptor = llOpen(port, SERVER);
 
+	int file_descriptor = llOpen(port, SERVER);
 	if (file_descriptor < 0)
 	{
 		printf("Error opening Serial Port\n");
@@ -122,7 +151,8 @@ int server(char * port, char* file_name)
 	values[0] = file_name;
 	values[1] = file_size_txt;
 	
-	writeControlPackage(file_descriptor, C_START, 2, types, lengths, values);
+	if( writeControlPackage(file_descriptor, C_START, 2, types, lengths, values) < 0)
+		llClose(file_descriptor);
 
 	unsigned char * buffer = malloc (sizeof(unsigned char * ) * packageSize);
 
@@ -137,18 +167,20 @@ int server(char * port, char* file_name)
 			exit(1);
 		}
 
-		printArray(buffer, bytesRead, "Package");
+		//printArray(buffer, bytesRead, "Package");
 		total += bytesRead;
 
 		if (writeDataPackage(file_descriptor, sequence, bytesRead, buffer) < 0)
 		{
-			printf("Error writing file\n");
+			llClose(file_descriptor);
 			exit(1);
 		}
 	printf("\n\n\n");
 	}
 
 	writeControlPackage(file_descriptor, C_END, 2, types, lengths, values);
+
+	llClose(file_descriptor);
 
 	return 0;
 }
@@ -157,30 +189,35 @@ int readPackage(int file_descriptor, unsigned char** data, int* bytesRead)
 {
 	unsigned char * package = (unsigned char *) malloc (DPH_SIZE + packageSize);
 	int readReturn = llRead(file_descriptor, package);
-	if (package[0] == C_DATA)
+	if(readReturn >= 0)
 	{
-		readDataPackage(package, data, bytesRead);
-		return C_DATA;
-	} else if (package[0] == C_START)
-	{
-		readControlPackage(package, readReturn);
-		return C_START;
-	} else if (package[0] == C_END)
-	{
-		readControlPackage(package, readReturn);
-		return C_END;
-	} else
-	{
+		if (package[0] == C_DATA)
+		{
+			readDataPackage(package, data, bytesRead);
+			return C_DATA;
+		} else if (package[0] == C_START)
+		{
+			readControlPackage(package, readReturn);
+			return C_START;
+		} else if (package[0] == C_END)
+		{
+			readControlPackage(package, readReturn);
+			return C_END;
+		} else
+		{
+			return -1;
+		}	
+	} else 
 		return -1;
-	}
 }
+
 
 int readDataPackage(unsigned char * package, unsigned char** data, int* bytesRead)
 {
 	int l2 = package[2];
 	int l1 = package[3];
 
-	int pSize = (256 * l2) + l1;
+	int pSize = (255 * l2) + l1;
 
 	*data = (unsigned char*) malloc (pSize * sizeof(unsigned char));
 
@@ -226,7 +263,10 @@ int writeDataPackage(int file_descriptor, int sequenceNumber, int dataSize, unsi
 	dataPackage[3] = dataSize % 255;
 	memcpy(dataPackage + 4, data, dataSize);
 
-	llWrite(file_descriptor, dataPackage, (DPH_SIZE + dataSize));
+	if(llWrite(file_descriptor, dataPackage, (DPH_SIZE + dataSize)) == -1)
+		return -1;
+	else
+		return 0;
 }
 
 int writeControlPackage(int file_descriptor, int controlField, int itemCount, unsigned char * types, unsigned char * lengths, unsigned char * * values)
@@ -254,5 +294,8 @@ int writeControlPackage(int file_descriptor, int controlField, int itemCount, un
 
 		packageIndex += lengths[index];
 	}
-	llWrite(file_descriptor, controlPackage, packageIndex);
+	if( llWrite(file_descriptor, controlPackage, packageIndex) == -1)
+		return -1;
+	else
+		return 0;
 }

@@ -27,6 +27,8 @@
 
 // State Machine States
 
+int global_mode;
+
 enum states
 {
 	START,

@@ -19,6 +19,8 @@
 
 #define DPH_SIZE	4
 
+#define MAX_PACKAGE_SIZE 2000
+
 // Public
 
 int main(int argc, char** argv);

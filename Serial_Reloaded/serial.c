@@ -9,9 +9,9 @@ int openSerial (char* path)
 	oldtio = (struct termios *) malloc (sizeof(struct termios));
 
 	struct termios newtio;
-
+	printf("before open\n");
 	int file_descriptor = open (path, O_RDWR | O_NOCTTY);
-
+	printf("after open\n");
 	if (file_descriptor < 0)
 	{
 		perror(path);
@@ -61,14 +61,16 @@ int writeSerial (int file_descriptor, unsigned char * buffer, int bufferSize)
 
 int readSerial (int file_descriptor, unsigned char * c)
 {
+printf("Before Read\n");
 	int res = read(file_descriptor, c, 1);
-
+printf("After Read character %X\n",*c);
 	if (res < 0)
 	{
 		perror("Timeout!\n");
 		return(-1);
 	}
 
+	
 	return 0;
 }
 
