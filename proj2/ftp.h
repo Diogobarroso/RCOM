@@ -37,6 +37,10 @@ int login_ftp(struct FTP_URL *ftp);
 
 
 
+int quit_ftp();
+
+
+
 
 /**
  * This function enters in passive mode 
@@ -52,7 +56,7 @@ int enter_pasv_mode();
  * 
  * @param filename The name of the file we want to download
  */
-int retrieve_file(const char *filename);
+char* retrieve_file(const char *filename);
 
 
 

@@ -194,7 +194,11 @@ regmatch_t* matches_regex(char *string, regex_t *expression)
 struct FTP_URL* ftp_exp_valid_and_struct(char *ftp_url) 
 {
   const char *FTP_REGEX = "ftp://(([^:].+):([^@].+)@)?(.*?)/(.*)";
-  int t;
+  int res, t;
+  char tmp_user[40];
+  char tmp_pass[40];
+  char tmp_host[40];
+  char tmp_path[2048];
   
   
   //Build the regular expression(compiled)
@@ -211,15 +215,37 @@ struct FTP_URL* ftp_exp_valid_and_struct(char *ftp_url)
   ftp->username = ftp->password = ftp->host = ftp->url_path = NULL;
   
   
-  regmatch_t *reg;
-  reg = matches_regex(ftp_url, &ftp_exp);
+  ///regmatch_t *reg;
+  res = sscanf(ftp_url, "ftp://%[^:]:%[^@]@%[^/]/%s\n", tmp_user, tmp_pass, tmp_host, tmp_path);
+  if(res == 4)
+  {
+    ftp->username = tmp_user;
+    ftp->password = tmp_pass;
+    ftp->host = host_to_ip(tmp_host);
+    ftp->url_path = tmp_path;
+    return ftp; 
+  }
+
+  
+  res = sscanf(ftp_url, "ftp://%[^/]/%s\n", tmp_host, tmp_path);
+  if(res == 2)
+  {
+    ftp->username = "anonymous";
+    ftp->password = "this@me.com";
+    ftp->host = host_to_ip(tmp_host);
+    ftp->url_path = tmp_path;
+    
+    return ftp;
+  }
+  
+  /**reg = matches_regex(ftp_url, &ftp_exp);
   if(reg != NULL)
   {
     /**
      * At this point we know that the regex is valid 
      * Now we need to extract the relevant details of the ftp address
      */
-    int set_vals;
+    /**int set_vals;
     set_vals = extract_ftp_details(reg, ftp_url, ftp);
     if(set_vals != 0)
     {
@@ -235,6 +261,6 @@ struct FTP_URL* ftp_exp_valid_and_struct(char *ftp_url)
     }
   }
   
-  regfree(&ftp_exp);
+  regfree(&ftp_exp);*/
   return NULL;
 }

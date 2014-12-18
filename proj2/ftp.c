@@ -24,6 +24,7 @@ void print_error_message_read(char *command)
 
 
 
+
 int download_file(const char *filename)
 {
   FILE *file;
@@ -31,18 +32,23 @@ int download_file(const char *filename)
   int tmp_bytes;
   
   
-  file = fopen(filename, "w");
+  file = fopen(filename, "wb");
   if(!file)
     return -1;
   
   
-  while((tmp_bytes = read(socket_id_download, buff, sizeof(buff))) > 0)
+  while((tmp_bytes = read(socket_id_download, buff, 256)) > 0)
   {
-    if(!tmp_bytes)
+    buff[tmp_bytes] = '\0';
+    if(!tmp_bytes) {
+      fclose(file);
       return -2;
+    }
     
-    if(fwrite(buff, tmp_bytes, 1, file) < 0)
+    if(fwrite(buff, tmp_bytes, 1, file) < 0) {
+      fclose(file);
       return -3;
+    }
   }
   
   
@@ -54,25 +60,68 @@ int download_file(const char *filename)
 
 
 
-int retrieve_file(const char *filename)
+char* retrieve_file(const char *filename)
 {
   int err;
   
-  err = send_ftp_command("RETR welcome.msg\n");
+  char *fname_tmp;
+  char command[256] = "RETR ";
+  printf("%s\n", filename);
+  fname_tmp = basename(strdup(filename));
+  printf("basename is: %s\n", fname_tmp);
+  strcat(command, filename);
+  strcat(command, "\n");
+  //printf("%s\n", command);
+  //err = send_ftp_command("RETR welcome.msg\n");
+  err = send_ftp_command(command);
   if(err == -1)
   {
     print_error_message_write("RETR");
-    return err;
+    return NULL;
   }
   
   
   char str[1024] = "";
   err = read_from_ftp(str, sizeof(str));
+  
+  if(str[0] == '5' && str[1] == '5' && str[2] == '0')
+    return NULL;
+  
   if(err == -1)
+    return NULL;
+  
+  
+  return fname_tmp;
+}
+
+
+
+int quit_ftp()
+{
+  char buff[1024] = "";
+  int err;
+  
+  printf("[*] Sending QUIT command!\n");
+  fflush(stdout);
+  
+  err = send_ftp_command("QUIT\n");
+  if(err == -1)
+  {
+    print_error_message_write("QUIT");
     return err;
+  }
   
   
-  return 0;
+  err = read_from_ftp(buff, sizeof(buff));
+  if(err == -1)
+  {
+    print_error_message_read("QUIT");
+    return err;
+  }
+  
+  write_red_text(buff);
+  close(socket_id);
+  close(socket_id_download);
 }
 
 
@@ -84,7 +133,7 @@ int enter_pasv_mode()
   char buff[1024] = "";
   int ip[4];
   int port[2];
-  char pasv_ip[16];
+  char pasv_ip[256] = "";
   int pasv_port, new_socket_id;
   
   
@@ -117,8 +166,9 @@ int enter_pasv_mode()
     return err;
   }
   
-  memset(&pasv_ip, 0, sizeof(pasv_ip));
-  err = sprintf(pasv_ip, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+  
+  //memset(&pasv_ip, 0, sizeof(pasv_ip));
+  err = snprintf(pasv_ip, 256, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
   
   printf("[*] The new IP address is: %s\n", pasv_ip);
   fflush(stdout);
