@@ -6,8 +6,6 @@
 #include <errno.h>
 #include <string.h>
 #include "strutils.h"
-
-
 #define FTP_PORT 21
 
 
@@ -41,7 +39,6 @@ int quit_ftp();
 
 
 
-
 /**
  * This function enters in passive mode 
  * 
@@ -60,15 +57,12 @@ char* retrieve_file(const char *filename);
 
 
 
-
 /**
  * Downloads a file from the FTP server
  * 
  * @param filename The name of the file
  */
 int download_file(const char *filename);
-
-
 
 
 
@@ -82,14 +76,12 @@ int connect_ftp_to_server(char *ip_address, int port);
 
 
 
-
 /**
  * Writes a series of bytes to the server
  * 
  * We also make sure that the correct number of bytes were sent 
  */
 int send_ftp_command(char *command);
-
 
 
 
