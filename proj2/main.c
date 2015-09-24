@@ -4,15 +4,12 @@
 #include "ftp.h"
 
 
-
-
 void usage(char *name)
 {
   printf("Usage: %s ftp://<user>:<password>@<host>/<url-path>\n", name);
   //No need to continue the program, just exit
   exit(EXIT_FAILURE);
 }
-
 
 
 int main(int argc, char **argv) 
@@ -22,10 +19,8 @@ int main(int argc, char **argv)
   char *filename;
   filename = malloc(256 * sizeof(char));
   
-  
   if(argc != 2)
     usage(argv[0]);
-  
   
   ftp = ftp_exp_valid_and_struct(argv[1]);
   if(ftp == NULL)
@@ -55,6 +50,5 @@ int main(int argc, char **argv)
     write_red_text("[!] Something is wrong! The file could not be retrieved!\n");
     exit(EXIT_FAILURE);
   }
-  
   return 0;
 }
