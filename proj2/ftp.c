@@ -23,8 +23,6 @@ void print_error_message_read(char *command)
 
 
 
-
-
 int download_file(const char *filename)
 {
   FILE *file;
@@ -51,12 +49,10 @@ int download_file(const char *filename)
     }
   }
   
-  
   //close the file, never forget
   fclose(file);
   return 0;
 }
-
 
 
 
@@ -90,7 +86,6 @@ char* retrieve_file(const char *filename)
   if(err == -1)
     return NULL;
   
-  
   return fname_tmp;
 }
 
@@ -110,7 +105,6 @@ int quit_ftp()
     print_error_message_write("QUIT");
     return err;
   }
-  
   
   err = read_from_ftp(buff, sizeof(buff));
   if(err == -1)
@@ -136,11 +130,8 @@ int enter_pasv_mode()
   char pasv_ip[256] = "";
   int pasv_port, new_socket_id;
   
-  
-  
   printf("[*] Sending PASV command!\n");
   fflush(stdout);
-  
   
   //Send the PASV command to the server 
   err = send_ftp_command("PASV\n");
@@ -165,7 +156,6 @@ int enter_pasv_mode()
     print_normal_text("[!] An error occurred while trying to read the data from the PASV command!");
     return err;
   }
-  
   
   //memset(&pasv_ip, 0, sizeof(pasv_ip));
   err = snprintf(pasv_ip, 256, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -216,7 +206,6 @@ int login_ftp(struct FTP_URL *ftp)
   //Show the message from the server to the user
   write_red_text(buff);
   
-  
   memset(&buff, 0, sizeof(buff));
   print_normal_text("[*] Sending PASS command");
   snprintf(buff, sizeof(buff), "PASS %s\n", ftp->password);
@@ -239,8 +228,7 @@ int login_ftp(struct FTP_URL *ftp)
   
   if(buff[0] == '4' || buff[0] == '5')
     return -1;
-  
-  //Success
+
   return 0;
 }
 
@@ -253,7 +241,6 @@ int read_from_ftp(char *command, size_t size)
     perror("[!] Something is wrong! It looks like no socked connection exists! Exiting the program now...\n");
     exit(EXIT_FAILURE);
   }
-  
   
   int offset = 0;
   ssize_t tmp_bytes;
@@ -278,8 +265,7 @@ int read_from_ftp(char *command, size_t size)
   if(!tmp_bytes)
     return -1;
   
-//  printf("Command is: %s\n", command);
-  
+  // printf("Command is: %s\n", command);
   return 0;
 }
 
@@ -293,7 +279,6 @@ int send_ftp_command(char *command)
     perror("[!] Something is wrong! It looks like no socket connection exists! Exiting the program now...\n");
     exit(EXIT_FAILURE);
   }
-  
   
   int size_left, size_copy, tmp_bytes;
   size_left = size_copy = strlen(command);
@@ -311,13 +296,10 @@ int send_ftp_command(char *command)
 }
 
 
-
-
 int connect_ftp_to_server(char *ip_address, int port)
 {
   if(socket_id < 0)
     socket_id = create_socket_connection(ip_address, port);
-  
   
   /**
    * Error, should never happen
@@ -326,7 +308,6 @@ int connect_ftp_to_server(char *ip_address, int port)
    */
   if(socket_id < 0)
     exit(EXIT_FAILURE);
-  
   
   /**
    * Success, looks like we're connected to the server
@@ -343,7 +324,6 @@ int connect_ftp_to_server(char *ip_address, int port)
   read_from_ftp(welcome_message, sizeof(welcome_message));
   write_red_text(welcome_message);
   
-  
   return 0;
 }
 
@@ -355,7 +335,6 @@ int create_socket_connection(char *ip_address, int port)
   int sock_id, connect_id;
   struct sockaddr_in sock;
   
-  
   //Sets all values in buffer to zero
   bzero((char *)&sock, sizeof(sock));
   
@@ -364,8 +343,6 @@ int create_socket_connection(char *ip_address, int port)
   sock.sin_addr.s_addr = inet_addr(ip_address);
   sock.sin_port = htons(port);
   
-  
-  
   sock_id = socket(sock.sin_family, SOCK_STREAM, 0);
   if(sock_id < 0)
   {
@@ -373,15 +350,12 @@ int create_socket_connection(char *ip_address, int port)
     return -1; 
   }
   
-  
-  
   connect_id = connect(sock_id, (struct sockaddr *) &sock, sizeof(sock));
   if(connect_id < 0)
   {
     perror("[!] An error occurred while connecting to the server!");
     return -1;
   }
-  
   
   return sock_id;
 }
